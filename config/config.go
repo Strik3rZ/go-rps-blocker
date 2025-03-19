@@ -27,17 +27,14 @@ type Config struct {
 func LoadConfig() (*Config, error) {
     cfg := &Config{}
 
-    // Флаги для CLI
     flag.StringVar(&cfg.Device, "device", "eth0", "Сетевой интерфейс для прослушивания")
     flag.IntVar(&cfg.SnapshotLen, "snapshotlen", 1024, "Размер snapshot (байт) для pcap")
     flag.BoolVar(&cfg.Promiscuous, "promisc", true, "Включать режим promiscuous")
-    // Условно, можно задать cfg.Timeout как pcap.BlockForever, но для наглядности
     flag.DurationVar(&cfg.Timeout, "timeout", 0, "Таймаут pcap (0 = BlockForever)")
     flag.IntVar(&cfg.Threshold, "threshold", 100, "Порог пакетов в секунду, выше которого IP блокируется")
     flag.StringVar(&cfg.WhitelistFile, "whitelist", "/tmp/whitelist_ips.txt", "Путь к файлу с whitelist IP")
     flag.StringVar(&cfg.BlockedIPFile, "blocked", "/tmp/blocked_ips.txt", "Путь к файлу, куда писать заблокированные IP")
     flag.DurationVar(&cfg.TickerInterval, "interval", time.Second, "Интервал проверки счетчика (RPS)")
-    // Порт 0 => слушаем все порты
     var port uint
     flag.UintVar(&port, "port", 0, "TCP/UDP порт, который надо слушать (0 = все)")
     
@@ -48,7 +45,6 @@ func LoadConfig() (*Config, error) {
     // Инициализируем карту whitelist
     whitelist, err := loadWhitelistFile(cfg.WhitelistFile)
     if err != nil {
-        // Если файла нет, не падаем, но предупреждаем
         fmt.Fprintf(os.Stderr, "Предупреждение: не удалось загрузить whitelist: %v\n", err)
     }
     cfg.WhitelistIPs = whitelist

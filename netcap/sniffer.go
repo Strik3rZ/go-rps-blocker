@@ -38,7 +38,6 @@ func NewSniffer(cfg *config.Config, blocker *block.Blocker) *Sniffer {
 
 // Start запускает захват пакетов и периодическую проверку
 func (s *Sniffer) Start() error {
-    // Открываем интерфейс
     handle, err := pcap.OpenLive(
         s.cfg.Device,
         int32(s.cfg.SnapshotLen),
@@ -89,7 +88,6 @@ func (s *Sniffer) runPacketLoop(packetSource *gopacket.PacketSource) {
         select {
         case packet, ok := <-packetSource.Packets():
             if !ok {
-                // канал закрылся
                 return
             }
             s.processPacket(packet)
@@ -101,7 +99,6 @@ func (s *Sniffer) runPacketLoop(packetSource *gopacket.PacketSource) {
 
 // processPacket инкрементирует счётчик для src IP
 func (s *Sniffer) processPacket(packet gopacket.Packet) {
-    // Для примера обрабатываем IPv4
     ipLayer := packet.Layer(layers.LayerTypeIPv4)
     if ipLayer == nil {
         return
@@ -114,7 +111,6 @@ func (s *Sniffer) processPacket(packet gopacket.Packet) {
 
     // Проверяем whitelist/blocked
     if s.blocker.IsWhitelisted(srcIP) || s.blocker.IsBlocked(srcIP) {
-        // Не учитываем в статистике
         return
     }
 
@@ -145,14 +141,11 @@ func (s *Sniffer) checkAndBlock() {
 
     for ip, count := range s.packetCount {
         if count > s.cfg.Threshold {
-            // Блокируем IP
-            // BlockIP() сам проверит whitelist и т.д.
             if err := s.blocker.BlockIP(ip); err != nil {
                 log.Printf("[Sniffer] Ошибка блокировки IP %s: %v", ip, err)
             }
         }
     }
-    // Сбрасываем счётчики на новый интервал
     s.packetCount = make(map[string]int)
 }
 

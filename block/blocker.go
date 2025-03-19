@@ -47,28 +47,22 @@ func (b *Blocker) BlockIP(ip string) error {
     b.mutex.Lock()
     defer b.mutex.Unlock()
 
-    // Уже заблокирован?
     if b.blockedIPs[ip] {
         return nil
     }
-    // И в любом случае не блокируем, если он в whitelist
     if b.cfg.WhitelistIPs[ip] {
         return nil
     }
 
     log.Printf("[Blocker] Блокируем IP %s...\n", ip)
 
-    // Пример вызова iptables:
-    // iptables -A INPUT -s <ip> -j DROP
     cmd := exec.Command("iptables", "-A", "INPUT", "-s", ip, "-j", "DROP")
     if err := cmd.Run(); err != nil {
         return fmt.Errorf("ошибка выполнения iptables: %w", err)
     }
 
-    // Помечаем как заблокированный
     b.blockedIPs[ip] = true
 
-    // Дописываем в файл
     if err := appendToFile(b.cfg.BlockedIPFile, ip); err != nil {
         return fmt.Errorf("ошибка записи в файл заблокированных: %w", err)
     }
