@@ -45,7 +45,7 @@
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/username/go-rps-blocker.git
+   git clone https://github.com/Strik3rZ/go-rps-blocker.git
    cd go-rps-blocker
    ```
 2. Инициализируйте и обновите зависимости Go (если нужно):
